@@ -39,17 +39,17 @@ courts_section.each do |c|
     if tr.attr('class') == 'title'
       division = {}
       division[:name] = tr.text.strip
-      division[:judges] = []
+      division[:branchs] = []
       court[:divisions] << division
     elsif tr.attr('class') == 'tr-1'
       td_section = tr.css('td')
       if td_section[1].text.include? "法官"
-        judge = {}
-        judge[:branch] = td_section[0].text.strip
-        judge[:name] = td_section[1].text.strip.split('　')[0]
-        judge[:clerk] = td_section[2].text.strip
-        if division[:judges]
-          division[:judges] << judge
+        branch = {}
+        branch[:branch] = td_section[0].text.strip
+        branch[:judge] = td_section[1].text.strip.split('　')[0]
+        branch[:clerk] = td_section[2].text.strip
+        if division[:branchs]
+          division[:branchs] << branch
         end
       end
     end
