@@ -21,3 +21,7 @@ clerk：書記官
 ```bash
 ruby get_judges.rb
 ```
+
+### LICENSE
+
+程式碼部分為 MIT 授權，資料（data/*）部分為CC0授權。
