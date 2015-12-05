@@ -23,6 +23,7 @@ url = 'http://csdi.judicial.gov.tw/abbs/wkw/WHD3A00.jsp'
 query_url = 'http://csdi.judicial.gov.tw/abbs/wkw/WHD3A04.jsp?court='
 
 html = get_html(url)
+content = "單位,庭別,股別,法官\n"
 
 courts = []
 courts_section = html.css('option')
@@ -48,6 +49,8 @@ courts_section.each do |c|
         branch[:branch] = td_section[0].text.strip
         branch[:judge] = td_section[1].text.strip.split('　')[0]
         branch[:clerk] = td_section[2].text.strip
+        content += "#{court[:name]},#{division[:name]},#{branch[:branch]},#{branch[:judge]}\n"
+        puts "#{court[:name]},#{division[:name]},#{branch[:branch]},#{branch[:judge]}\n"
         if division[:branchs]
           division[:branchs] << branch
         end
@@ -58,3 +61,6 @@ courts_section.each do |c|
 end
 
 write_json('data/judges.json', courts)
+File.open("data/judges.csv","w") do |f|
+  f.write(content)
+end
