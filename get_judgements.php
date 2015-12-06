@@ -1,8 +1,11 @@
 <?php
 /*
   參數為欲抓取的日期，如 2015-12-05。
+  
   usage:
   php get_judgements.php 2015-12-05
+
+  This program is created by ronny wang and modified by billy3321.
 */
 date_default_timezone_set('Asia/Taipei');
 libxml_use_internal_errors(true);
