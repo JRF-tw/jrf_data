@@ -3,7 +3,7 @@
   參數為欲抓取的日期，如 2015-12-05。
 */
 date_default_timezone_set('Asia/Taipei');
-$keyword = urlencode('號');
+$keyword = urlencode('年');
 $button = urlencode('查詢');
 $sel_judword = urlencode('常用字別');
 
@@ -13,9 +13,6 @@ $courts_array = json_decode($court_json_content, true);
 $sdate = new DateTime($argv[1]);
 $edate = new DateTime($argv[1]);
 $edate -> modify('+1 day');
-$sdate -> modify('-1911 years');
-$edate -> modify('-1911 years');
-
 
 $sdate_string = ltrim($sdate -> format('Ymd'), '0');
 $edate_string = ltrim($edate -> format('Ymd'), '0');
@@ -23,14 +20,15 @@ $edate_string = ltrim($edate -> format('Ymd'), '0');
 foreach ($courts_array as $court) {
     $court_string = strtolower(urlencode($court['name']));
     foreach ($court['departments'] as $department) {
-        $url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court={$court['code']}+{$court_string}&v_sys={$department['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate={$sdate_string}&edate={$edate_string}&page=1&searchkw=&jmain=&cw=0";
+        $url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court={$court['code']}+{$court_string}&v_sys={$department['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate={$sdate_string}&edate={$edate_string}&page=1&searchkw={$keyword}&jmain=&cw=0";
         error_log($url);
+
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_REFERER, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $content = curl_exec($curl);
         curl_close($curl);
-        if (!preg_match('#共([0-9]*)筆#', $content, $matches)) {
+        if (!preg_match('#本次查詢結果共([0-9]*)筆#', $content, $matches)) {
             var_dump($content);
             error_log("{$court['name']} {$department['name']} has no record");
             continue;
