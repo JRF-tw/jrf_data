@@ -16,6 +16,12 @@ $password = 'P@ssw0rd';
 $court_json_content = file_get_contents("./courts.json");
 $courts_array = json_decode($court_json_content, true);
 
+function sleep_random_second() {
+    $second = rand(2, 6);
+    error_log("sleep for {$second} seconds...");
+    sleep($second);
+}
+
 $dsn = "mysql:host=127.0.0.1;dbname={$dbname}";
 $dbh = new PDO($dsn, $dbuser, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;"));
 
@@ -27,6 +33,7 @@ $sdate_string = ltrim($sdate -> format('Ymd'), '0');
 $edate_string = ltrim($edate -> format('Ymd'), '0');
 
 foreach ($courts_array as $court) {
+    sleep_random_second();
     $court_string = strtolower(urlencode($court['name']));
     foreach ($court['departments'] as $department) {
         $url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court={$court['code']}+{$court_string}&v_sys={$department['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate={$sdate_string}&edate={$edate_string}&page=1&searchkw={$keyword}&jmain=&cw=0";
@@ -48,6 +55,7 @@ foreach ($courts_array as $court) {
         }
         $param = $matches[1];
         for ($j = 1; $j <= $count; $j ++) {
+            sleep_random_second();
             $case_url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY03_1.aspx?id={$j}&{$param}";
             error_log("{$j}/{$count} {$case_url}");
             $curl = curl_init($case_url);
