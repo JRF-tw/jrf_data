@@ -1,7 +1,7 @@
 <?php
 /*
   參數為欲抓取的日期，如 2015-12-05。
-  
+
   usage:
   php get_judgements.php 2015-12-05
 
@@ -38,8 +38,8 @@ $edate_string = ltrim($edate -> format('Ymd'), '0');
 foreach ($courts_array as $court) {
     sleep_random_second();
     $court_string = strtolower(urlencode($court['name']));
-    foreach ($court['departments'] as $department) {
-        $url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court={$court['code']}+{$court_string}&v_sys={$department['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate={$sdate_string}&edate={$edate_string}&page=1&searchkw={$keyword}&jmain=&cw=0";
+    foreach ($court['divisions'] as $division) {
+        $url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court={$court['code']}+{$court_string}&v_sys={$division['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate={$sdate_string}&edate={$edate_string}&page=1&searchkw={$keyword}&jmain=&cw=0";
         error_log($url);
 
         $curl = curl_init($url);
@@ -48,7 +48,7 @@ foreach ($courts_array as $court) {
         $content = curl_exec($curl);
         curl_close($curl);
         if (!preg_match('#本次查詢結果共([0-9]*)筆#', $content, $matches)) {
-            error_log("{$court['name']} {$department['name']} has no record");
+            error_log("{$court['name']} {$division['name']} has no record");
             continue;
         }
         $count = $matches[1];
@@ -110,19 +110,19 @@ foreach ($courts_array as $court) {
             $now = $now->format("Y-m-d H:i:s");
             switch ($ret['v_sys']) {
                 case 'V':
-                    $department = '民事';
+                    $division_name = '民事';
                     break;
                 case 'C':
-                    $department = '刑事';
+                    $division_name = '刑事';
                     break;
                 case 'A':
-                    $department = '行政';
+                    $division_name = '行政';
                     break;
                 case 'P':
-                    $department = '公懲';
+                    $division_name = '公懲';
                     break;
                 default:
-                    $department = null;
+                    $division_name = null;
                     break;
             }
             // $record = array(
@@ -132,7 +132,7 @@ foreach ($courts_array as $court) {
             //     $ret['jyear'],
             //     $ret['jcase'],
             //     $ret['jno'],
-            //     $department,
+            //     $division,
             //     $ret['jcheck'],
             //     $reason,
             //     $judgement_content,
@@ -148,9 +148,9 @@ foreach ($courts_array as $court) {
                   court_code = :court_code,
                   court_name = :court_name,
                   year = :year,
-                  jcase = :jcase,
-                  jno = :jno,
-                  department = :department,
+                  word = :word,
+                  number = :number,
+                  division = :division,
                   jcheck = :jcheck,
                   reason = :reason,
                   content = :content,
@@ -162,13 +162,13 @@ foreach ($courts_array as $court) {
                   court_code = :court_code,
                   court_name = :court_name,
                   year = :year,
-                  jcase = :jcase,
-                  jno = :jno,
-                  department = :department,
+                  word = :word,
+                  number = :number,
+                  division = :division,
                   jcheck = :jcheck,
                   reason = :reason,
                   content = :content,
-                  published_at = :published_at,
+                  adjudged_at = :adjudged_at,
                   updated_at = :updated_at
             ";
 
@@ -177,13 +177,13 @@ foreach ($courts_array as $court) {
             $sth->bindValue('court_code', $court_code , PDO::PARAM_STR);
             $sth->bindValue('court_name', $court_name , PDO::PARAM_STR);
             $sth->bindValue('year', $year , PDO::PARAM_INT);
-            $sth->bindValue('jcase', $ret['jcase'] , PDO::PARAM_STR);
-            $sth->bindValue('jno', $ret['jno'] , PDO::PARAM_INT);
-            $sth->bindValue('department', $department , PDO::PARAM_STR);
+            $sth->bindValue('word', $ret['jcase'] , PDO::PARAM_STR);
+            $sth->bindValue('number', $ret['jno'] , PDO::PARAM_INT);
+            $sth->bindValue('division', $division_name , PDO::PARAM_STR);
             $sth->bindValue('jcheck', $ret['jcheck'] , PDO::PARAM_STR);
             $sth->bindValue('reason', $reason , PDO::PARAM_STR);
             $sth->bindValue('content', $judgement_content , PDO::PARAM_STR);
-            $sth->bindValue('published_at', $date_string , PDO::PARAM_STR);
+            $sth->bindValue('adjudged_at', $date_string , PDO::PARAM_STR);
             $sth->bindValue('updated_at', $now , PDO::PARAM_STR);
             $sth->bindValue('created_at', $now , PDO::PARAM_STR);
             $sth->execute();
