@@ -10,6 +10,6 @@ now=$start
 echo "start get judgements..." > log/get_judgements-${1}.log
 while [[ "$now" < "$end" ]] ; do
   echo "$now"
-  ./get_judgements.rb "$now" | tee -a log/get_judgements-${1}.log
+  ./get_judgements.rb "$now" >> log/get_judgements-${1}.log
   now=`$DATE +$FORMAT -d "$now + 1 day"`
 done
