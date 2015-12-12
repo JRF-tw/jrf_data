@@ -1,0 +1,6 @@
+{
+  "database": "judgement-database-development",
+  "username": "root",
+  "password": "P@ssw0rd",
+  "host": "127.0.0.1"
+}

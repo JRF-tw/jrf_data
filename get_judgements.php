@@ -12,9 +12,8 @@ libxml_use_internal_errors(true);
 $keyword = urlencode('年');
 $button = urlencode('查詢');
 $sel_judword = urlencode('常用字別');
-$dbname = 'judgements-development';
-$dbuser = 'root';
-$password = 'P@ssw0rd';
+$config_json = file_get_contents("./db.json");
+$db_config = json_decode($config_json, true);
 
 $court_json_content = file_get_contents("./courts.json");
 $courts_array = json_decode($court_json_content, true);
@@ -25,8 +24,8 @@ function sleep_random_second() {
     sleep($second);
 }
 
-$dsn = "mysql:host=127.0.0.1;dbname={$dbname}";
-$dbh = new PDO($dsn, $dbuser, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;"));
+$dsn = "mysql:host={$db_config['host']};dbname={$db_config['database']}";
+$dbh = new PDO($dsn, $db_config['username'], $db_config['password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;"));
 
 $sdate = new DateTime($argv[1]);
 $edate = new DateTime($argv[1]);

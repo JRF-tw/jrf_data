@@ -15,6 +15,11 @@ def write_json(filename, content)
   end
 end
 
+def read_db_config
+  file = File.read('./db.json')
+  return JSON.parse(file)
+end
+
 def get_html(url)
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   page = open(url)
@@ -173,7 +178,8 @@ end
 def get_courts
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   date1, date2 = get_date_section()
-  db = Mysql2::Client.new(:host => "localhost", :username => "root", :password => "P@ssw0rd", :database => "judgements-development")
+  db_config = read_db_config()
+  db = Mysql2::Client.new(:host => db_config['host'], :username => db_config['username'], :password => db_config['password'], :database => db_config['database'])
   courts = []
   options = get_options()
   options.each do |o|
