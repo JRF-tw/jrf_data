@@ -9,6 +9,8 @@ require 'mysql2'
 require 'date'
 # require 'charlock_holmes'
 
+Dir.chdir(File.dirname(__FILE__))
+
 def write_json(filename, content)
   File.open(filename,"w") do |f|
     f.write(JSON.pretty_generate(content))

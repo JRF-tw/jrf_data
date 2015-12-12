@@ -11,6 +11,8 @@ require 'date'
 require 'cgi'
 # require 'charlock_holmes'
 
+Dir.chdir(File.dirname(__FILE__))
+
 def read_db_config
   file = File.read('./db.json')
   return JSON.parse(file)
