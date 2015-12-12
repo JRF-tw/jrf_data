@@ -33,6 +33,12 @@ def init_db
   return Mysql2::Client.new(:host => db_config['host'], :username => db_config['username'], :password => db_config['password'], :database => db_config['database'])
 end
 
+def sleep_random_second
+  seconds = Random.rand(5..15)
+  puts "sleep #{seconds} seconds..."
+  sleep(seconds)
+end
+
 def get_date(date_string, time_string)
   date_list = date_string.split('/')
   date_list[0] = date_list[0].to_i + 1911
@@ -46,7 +52,7 @@ def get_options
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   uri = URI.parse('http://csdi.judicial.gov.tw/abbs/wkw/WHD3A00.jsp')
   agent = Mechanize.new
-  sleep(Random.rand(1..5))
+  sleep_random_second()
   raw_html = agent.get(uri)
   html = Nokogiri::HTML(ic.iconv(raw_html.body))
   options = html.css('option')
@@ -95,7 +101,7 @@ def get_page_total(k, v)
     'Origin' => 'http://csdi.judicial.gov.tw',
     'Referer' => 'http://csdi.judicial.gov.tw/abbs/wkw/WHD3A01.jsp'
   }
-  sleep(Random.rand(1..5))
+  sleep_random_second()
   raw_html = agent.post(uri, post_data, header_data)
   html = Nokogiri::HTML(ic.iconv(raw_html.body))
 
@@ -132,7 +138,7 @@ def get_schedules(db, court, division)
       }
       uri = URI.parse('http://csdi.judicial.gov.tw/abbs/wkw/WHD3A02.jsp')
       agent = Mechanize.new
-      sleep(Random.rand(1..5))
+      sleep_random_second()
       raw_html = agent.get(uri, get_data)
       html = Nokogiri::HTML(ic.iconv(raw_html.body))
       trs = html.css('table')[1].css('tr')
@@ -192,7 +198,7 @@ def get_courts
   options.each do |o|
     uri = URI.parse('http://csdi.judicial.gov.tw/abbs/wkw/WHD3A01.jsp')
     agent = Mechanize.new
-    sleep(Random.rand(1..5))
+    sleep_random_second()
     raw_html = agent.post(uri, {court: o, date1: date1, date2: date2})
     html = Nokogiri::HTML(ic.iconv(raw_html.body))
     radios = html.css('input[type="radio"]')
