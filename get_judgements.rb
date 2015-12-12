@@ -85,7 +85,7 @@ def main
       content.force_encoding('UTF-8')
       matches = content.scan(/本次查詢結果共([0-9]*)筆/)
       if matches.length == 0
-        puts "{court['name']} {division['name']} has no record"
+        puts "#{court['name']} #{division['name']} has no record"
         next
       end
       count = matches[0][0].to_i
