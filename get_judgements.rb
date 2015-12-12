@@ -41,8 +41,13 @@ def sleep_random_second
 end
 
 def get_date_section
-  date1 = Date.parse(ARGV[0]) - 1
-  date2 = Date.parse(ARGV[0])
+  if ARGV[0]
+    date1 = Date.parse(ARGV[0]) - 1
+    date2 = Date.parse(ARGV[0])
+  else
+    date1 = Date.today - 8
+    date2 = Date.today - 7
+  end
   date1 = date1.strftime('%Y%m%d')
   date2 = date2.strftime('%Y%m%d')
   return date1, date1

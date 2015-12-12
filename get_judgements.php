@@ -7,6 +7,9 @@
 
   This program is created by ronny wang and modified by billy3321.
 */
+
+
+
 date_default_timezone_set('Asia/Taipei');
 libxml_use_internal_errors(true);
 $keyword = urlencode('年');
