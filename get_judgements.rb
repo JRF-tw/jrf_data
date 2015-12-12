@@ -81,14 +81,12 @@ def main
         puts "{court['name']} {division['name']} has no record"
         continue
       end
-      puts matches.to_json
       count = matches[0][0].to_i
       matches = content.scan(/FJUDQRY03_1\.aspx\?id=[0-9]*&([^"]*)/)
       if matches.length == 0
         puts "page seems something wrong"
         continue
       end
-      puts matches.to_json
       params = matches[0][0]
       (1..count).each do |j|
         sleep_random_second()
@@ -157,7 +155,6 @@ def main
                   content = '#{db.escape(judgement_content)}',
                   adjudged_at = '#{db.escape(date_string)}',
                   updated_at = NOW()"
-        puts sql
         insert = db.query(sql)
       end
     end
