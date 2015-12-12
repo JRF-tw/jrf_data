@@ -15,11 +15,11 @@ $sel_judword = urlencode('常用字別');
 $config_json = file_get_contents("./db.json");
 $db_config = json_decode($config_json, true);
 
-$court_json_content = file_get_contents("./courts.json");
+$court_json_content = file_get_contents("./courts1.json");
 $courts_array = json_decode($court_json_content, true);
 
 function sleep_random_second() {
-    $second = rand(2, 6);
+    $second = rand(10, 40);
     error_log("sleep for {$second} seconds...");
     sleep($second);
 }
@@ -46,6 +46,7 @@ foreach ($courts_array as $court) {
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $content = curl_exec($curl);
         curl_close($curl);
+        error_log($content);
         if (!preg_match('#本次查詢結果共([0-9]*)筆#', $content, $matches)) {
             error_log("{$court['name']} {$division['name']} has no record");
             continue;
@@ -95,6 +96,7 @@ foreach ($courts_array as $court) {
             $court_code = explode(' ', $ret['v_court'])[0];
             $court_name = explode(' ', $ret['v_court'])[1];
             $date_string = explode(',', $ret['jrecno'])[3];
+            $year = explode(',', $ret['jrecno'])[0];
             $datetime = new DateTime($date_string);
             $date_string = $datetime->format("Y-m-d");
             $content = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $content);
@@ -156,7 +158,7 @@ foreach ($courts_array as $court) {
                   jcheck = :jcheck,
                   reason = :reason,
                   content = :content,
-                  published_at = :published_at,
+                  adjudged_at = :adjudged_at,
                   created_at = :created_at,
                   updated_at = :updated_at
                ON DUPLICATE KEY UPDATE

@@ -26,6 +26,11 @@ def get_html(url)
   html = Nokogiri::HTML(ic.iconv(page.read))
 end
 
+def init_db
+  db_config = read_db_config()
+  return Mysql2::Client.new(:host => db_config['host'], :username => db_config['username'], :password => db_config['password'], :database => db_config['database'])
+end
+
 def get_date(date_string, time_string)
   date_list = date_string.split('/')
   date_list[0] = date_list[0].to_i + 1911
