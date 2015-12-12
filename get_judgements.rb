@@ -86,13 +86,13 @@ def main
       matches = content.scan(/本次查詢結果共([0-9]*)筆/)
       if matches.length == 0
         puts "{court['name']} {division['name']} has no record"
-        continue
+        next
       end
       count = matches[0][0].to_i
       matches = content.scan(/FJUDQRY03_1\.aspx\?id=[0-9]*&([^"]*)/)
       if matches.length == 0
         puts "page seems something wrong"
-        continue
+        next
       end
       params = matches[0][0]
       (1..count).each do |j|
@@ -104,7 +104,7 @@ def main
         case_matches = case_content.scan(/href="([^"]*)">友善列印/)
         if case_matches.length == 0
           puts 'cannot find link'
-          continue
+          next
         end
         print_url = case_matches[0][0];
         queries = CGI.parse(URI.parse(print_url).query)
