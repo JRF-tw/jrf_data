@@ -5,6 +5,8 @@ require 'iconv'
 require 'nokogiri'
 require 'json'
 require 'mechanize'
+require 'mysql2'
+require 'date'
 # require 'charlock_holmes'
 
 def write_json(filename, content)
@@ -57,6 +59,18 @@ def get_sys_name(sys)
   end
 end
 
+def get_date_section
+  today = DateTime.now
+
+  year1 = today.strftime('%Y').to_i - 1911
+  date1 = "#{year1}" + today.strftime('%m%d')
+  # tomorrow = today + 1
+  # year2 = tomorrow.strftime('%Y').to_i - 1911
+  # date2 = "#{year2}" + tomorrow.strftime('%m%d')
+  return date1, date1
+end
+
+
 def get_page_total(k, v)
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   uri = URI.parse('http://csdi.judicial.gov.tw/abbs/wkw/WHD3A02.jsp')
@@ -82,15 +96,18 @@ def get_page_total(k, v)
   end
 end
 
-def get_schedules(crtid, sys)
+def get_schedules(db, court, division)
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   schedules = []
+  crtid = court["value"]
+  sys = division["value"]
   page_total = get_page_total(crtid, sys)
+  date1, date2 = get_date_section()
   if page_total == 0
     return []
   else
     page_total.times.each do |i|
-      sql_conction = "UPPER(CRTID)='#{crtid}' AND SYS='#{sys}'  ORDER BY  DUDT,DUTM,CRMYY,CRMID,CRMNO"
+      sql_conction = "UPPER(CRTID)='#{crtid}' AND DUDT>='#{date1}' AND DUDT<='#{date2}' AND SYS='#{sys}'  ORDER BY  DUDT,DUTM,CRMYY,CRMID,CRMNO"
       get_data = {
         'pageNow' => (i + 1),
         'sql_conction' => sql_conction,
@@ -115,11 +132,11 @@ def get_schedules(crtid, sys)
         tds = tr.css('td')
         data = {}
         # 類別
-        data['action'] = tds[1].text.strip
+        data['division'] = tds[1].text.strip
         # 年度
         data['roc_year'] = tds[2].text.strip.to_i
         # 字別
-        data['issue'] = tds[3].text.strip
+        data['word'] = tds[3].text.strip
         # 案號
         data['case'] = tds[4].text.strip.gsub(" ", '').to_i
         # 開庭日期
@@ -132,6 +149,21 @@ def get_schedules(crtid, sys)
         data['process'] = tds[9].text.strip
         puts data.to_json
         schedules << data
+        insert = db.query("INSERT INTO schedules (court_name, court_code, division_name, division_code, roc_year, word, number, date, court, section, process, created_at, updated_at)
+                       VALUES ('#{db.escape(court['name'])}',
+                               '#{db.escape(court['value'])}',
+                               '#{db.escape(division['name'])}',
+                               '#{db.escape(division['value'])}',
+                               '#{data['roc_year']}',
+                               '#{db.escape(data['word'])}',
+                               '#{data['case']}',
+                               '#{db.escape(data['date'])}',
+                               '#{db.escape(data['court'])}',
+                               '#{db.escape(data['section'])}',
+                               '#{db.escape(data['process'])}',
+                               NOW(),
+                               NOW()
+                               )")
       end
     end
     return schedules
@@ -140,13 +172,15 @@ end
 
 def get_courts
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
+  date1, date2 = get_date_section()
+  db = Mysql2::Client.new(:host => "localhost", :username => "root", :password => "P@ssw0rd", :database => "judgements-development")
   courts = []
   options = get_options()
   options.each do |o|
     uri = URI.parse('http://csdi.judicial.gov.tw/abbs/wkw/WHD3A01.jsp')
     agent = Mechanize.new
     sleep(Random.rand(1..5))
-    raw_html = agent.post(uri, {court: o})
+    raw_html = agent.post(uri, {court: o, date1: date1, date2: date2})
     html = Nokogiri::HTML(ic.iconv(raw_html.body))
     radios = html.css('input[type="radio"]')
     radios = radios.map{ |r| r.attribute('value').value }
@@ -155,15 +189,15 @@ def get_courts
       court = {}
       court["name"] = c.text
       court["value"] = c.attribute('value').value
-      court["actions"] = []
+      court["divisions"] = []
       puts court.to_json
       radios.each do |r|
-        action = {}
-        action["value"] = r
-        action["name"] = get_sys_name(r)
-        action["schedules"] = get_schedules(court["value"], action["value"])
-        court["actions"] << action
-        puts action.to_json
+        division = {}
+        division["value"] = r
+        division["name"] = get_sys_name(r)
+        division["schedules"] = get_schedules(db, court, division)
+        court["divisions"] << division
+        puts division.to_json
       end
       courts << court
     end

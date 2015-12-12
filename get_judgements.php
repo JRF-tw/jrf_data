@@ -121,6 +121,9 @@ foreach ($courts_array as $court) {
                 case 'P':
                     $division_name = '公懲';
                     break;
+                case 'I':
+                    $division_name = '少年';
+                    break;
                 default:
                     $division_name = null;
                     break;
