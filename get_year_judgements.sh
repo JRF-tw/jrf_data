@@ -7,8 +7,9 @@ FORMAT="%Y-%m-%d"
 start=`$DATE +$FORMAT -d "${1}-01-01"`
 end=`$DATE +$FORMAT -d "${1}-12-31 + 1 day"`
 now=$start
+echo "start get judgements..." > log/get_judgements-${1}.log
 while [[ "$now" < "$end" ]] ; do
   echo "$now"
-  ./get_judgements.rb "$now"
+  ./get_judgements.rb "$now" >> log/get_judgements-${1}.log
   now=`$DATE +$FORMAT -d "$now + 1 day"`
 done
