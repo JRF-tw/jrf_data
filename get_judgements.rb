@@ -40,6 +40,15 @@ def sleep_random_second
   sleep(seconds)
 end
 
+def scan_content(content, pattern)
+  begin
+    matches = content.scan(pattern)
+  rescue
+    matches = []
+  end
+  return matches
+end
+
 def get_date_section
   if ARGV[0]
     date1 = Date.parse(ARGV[0]) - 1
@@ -83,13 +92,13 @@ def main
       page = open(url, "Referer" => url)
       content = page.read
       content.force_encoding('UTF-8')
-      matches = content.scan(/本次查詢結果共([0-9]*)筆/)
+      matches = scan_content(content, /本次查詢結果共([0-9]*)筆/)
       if matches.length == 0
         puts "#{court['name']} #{division['name']} has no record"
         next
       end
       count = matches[0][0].to_i
-      matches = content.scan(/FJUDQRY03_1\.aspx\?id=[0-9]*&([^"]*)/)
+      matches = scan_content(content, /FJUDQRY03_1\.aspx\?id=[0-9]*&([^"]*)/)
       if matches.length == 0
         puts "page seems something wrong"
         next
@@ -101,7 +110,7 @@ def main
         case_page = open(case_url, "Referer" => url)
         case_content = case_page.read
         case_content.force_encoding('UTF-8')
-        case_matches = case_content.scan(/href="([^"]*)">友善列印/)
+        case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
         if case_matches.length == 0
           puts 'cannot find link'
           next
