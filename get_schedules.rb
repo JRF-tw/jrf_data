@@ -7,6 +7,7 @@ require 'json'
 require 'mechanize'
 require 'mysql2'
 require 'date'
+require 'elasticsearch'
 # require 'charlock_holmes'
 
 Dir.chdir(File.dirname(__FILE__))
@@ -30,7 +31,17 @@ end
 
 def init_db
   db_config = read_db_config()
-  return Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
+  if db_config['mysql']['enable']
+    mysqldb = Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
+  else
+    mysqldb = false
+  end
+  if db_config['elasticsearch']['enable']
+    elasticsearchdb = Elasticsearch::Client.new(log: true, host: db_config['elasticsearch']['host'])
+  else
+    elasticsearchdb = false
+  end
+  return mysqldb, elasticsearchdb
 end
 
 def sleep_random_second
@@ -114,11 +125,11 @@ def get_page_total(k, v)
   end
 end
 
-def get_schedules(db, court, division)
+def get_schedules(mysqldb, elasticsearchdb, court, division)
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   schedules = []
-  crtid = court["value"]
-  sys = division["value"]
+  crtid = court["code"]
+  sys = division["code"]
   page_total = get_page_total(crtid, sys)
   date1, date2 = get_date_section()
   if page_total == 0
@@ -160,45 +171,71 @@ def get_schedules(db, court, division)
         # 開庭日期
         data['date'] = get_date(tds[5].text.strip, tds[6].text.strip)
         # 法庭
-        data['court'] = tds[7].text.strip
+        data['hall'] = tds[7].text.strip
         # 股別
         data['section'] = tds[8].text.strip
         # 庭類
         data['process'] = tds[9].text.strip
-        date_string = data['date'].gsub(" ", "-")
-        data['identify'] = "#{court['value']}-#{data['roc_year']}-#{data['word']}-#{data['case']}-#{date_string}"
+        date_string = data['date'].gsub(' ', '-')
+        puts data['date']
+        puts date_string
+        data['identify'] = "#{court['code']}-#{data['roc_year']}-#{data['word']}-#{data['case']}-#{date_string}"
         puts data.to_json
         schedules << data
-        insert = db.query("INSERT INTO `schedules`
+        if mysqldb
+          insert = mysqldb.query("INSERT INTO `schedules`
                             SET
-                              identify = '#{db.escape(data['identify'])}',
-                              court_name = '#{db.escape(court['name'])}',
-                              court_code = '#{db.escape(court['value'])}',
-                              division_name = '#{db.escape(division['name'])}',
-                              division_code = '#{db.escape(division['value'])}',
-                              roc_year = '#{data['roc_year']}',
-                              word = '#{db.escape(data['word'])}',
+                              identify = '#{mysqldb.escape(data['identify'])}',
+                              court_name = '#{mysqldb.escape(court['name'])}',
+                              court_code = '#{mysqldb.escape(court['code'])}',
+                              division_name = '#{mysqldb.escape(division['name'])}',
+                              division_code = '#{mysqldb.escape(division['code'])}',
+                              year = '#{data['roc_year']}',
+                              word = '#{mysqldb.escape(data['word'])}',
                               number = '#{data['case']}',
-                              begin_at = '#{db.escape(data['date'])}',
-                              court = '#{db.escape(data['court'])}',
-                              section = '#{db.escape(data['section'])}',
-                              process = '#{db.escape(data['process'])}',
+                              begin_at = '#{mysqldb.escape(data['date'])}',
+                              hall = '#{mysqldb.escape(data['hall'])}',
+                              section = '#{mysqldb.escape(data['section'])}',
+                              process = '#{mysqldb.escape(data['process'])}',
                               created_at = NOW(),
                               updated_at = NOW()
                             ON DUPLICATE KEY UPDATE
-                              identify = '#{db.escape(data['identify'])}',
-                              court_name = '#{db.escape(court['name'])}',
-                              court_code = '#{db.escape(court['value'])}',
-                              division_name = '#{db.escape(division['name'])}',
-                              division_code = '#{db.escape(division['value'])}',
-                              roc_year = '#{data['roc_year']}',
-                              word = '#{db.escape(data['word'])}',
+                              identify = '#{mysqldb.escape(data['identify'])}',
+                              court_name = '#{mysqldb.escape(court['name'])}',
+                              court_code = '#{mysqldb.escape(court['code'])}',
+                              division_name = '#{mysqldb.escape(division['name'])}',
+                              division_code = '#{mysqldb.escape(division['code'])}',
+                              year = '#{data['roc_year']}',
+                              word = '#{mysqldb.escape(data['word'])}',
                               number = '#{data['case']}',
-                              begin_at = '#{db.escape(data['date'])}',
-                              court = '#{db.escape(data['court'])}',
-                              section = '#{db.escape(data['section'])}',
-                              process = '#{db.escape(data['process'])}',
+                              begin_at = '#{mysqldb.escape(data['date'])}',
+                              hall = '#{mysqldb.escape(data['hall'])}',
+                              section = '#{mysqldb.escape(data['section'])}',
+                              process = '#{mysqldb.escape(data['process'])}',
                               created_at = NOW()")
+        end
+        if elasticsearchdb
+          body = {
+            court: {
+              name: court['name'],
+              code: court['code']
+            },
+            division: {
+              name: division['name'],
+              code: division['code']
+            },
+            roc_year: data['roc_year'],
+            word: data['word'],
+            number: data['case'],
+            begin_at: DateTime.parse(data['date']),
+            hall: data['hall'],
+            section: data['section'],
+            process: data['process'],
+            created_at: DateTime.now,
+            updated_at: DateTime.now
+          }
+          elasticsearchdb.index  index: 'judgements', type: 'schedule', id: data['identify'], body: body
+        end
       end
     end
     return schedules
@@ -208,8 +245,7 @@ end
 def get_courts
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   date1, date2 = get_date_section()
-  db_config = read_db_config()
-  db = Mysql2::Client.new(:host => db_config['host'], :username => db_config['username'], :password => db_config['password'], :database => db_config['database'])
+  mysqldb, elasticsearchdb = init_db()
   courts = []
   options = get_options()
   options.each do |o|
@@ -224,14 +260,14 @@ def get_courts
     child_options.each do |c|
       court = {}
       court["name"] = c.text
-      court["value"] = c.attribute('value').value
+      court["code"] = c.attribute('value').value
       court["divisions"] = []
       puts court.to_json
       radios.each do |r|
         division = {}
-        division["value"] = r
+        division["code"] = r
         division["name"] = get_sys_name(r)
-        division["schedules"] = get_schedules(db, court, division)
+        division["schedules"] = get_schedules(mysqldb, elasticsearchdb, court, division)
         court["divisions"] << division
         puts division.to_json
       end

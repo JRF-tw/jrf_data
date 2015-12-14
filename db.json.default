@@ -1,6 +1,13 @@
 {
-  "database": "judgement-database-development",
-  "username": "root",
-  "password": "P@ssw0rd",
-  "host": "127.0.0.1"
+  "mysql": {
+    "database": "judgements-development",
+    "username": "root",
+    "password": "P@ssw0rd",
+    "host": "127.0.0.1",
+    "enable": true
+  },
+  "elasticsearch": {
+    "host": "127.0.0.1",
+    "enable": true
+  }
 }

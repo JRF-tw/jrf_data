@@ -9,6 +9,7 @@ require 'mechanize'
 require 'mysql2'
 require 'date'
 require 'cgi'
+require 'elasticsearch'
 # require 'charlock_holmes'
 
 Dir.chdir(File.dirname(__FILE__))
@@ -20,7 +21,17 @@ end
 
 def init_db
   db_config = read_db_config()
-  return Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
+  if db_config['mysql']['enable']
+    mysqldb = Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
+  else
+    mysqldb = false
+  end
+  if db_config['elasticsearch']['enable']
+    elasticsearchdb = Elasticsearch::Client.new(log: true, host: db_config['elasticsearch']['host'])
+  else
+    elasticsearchdb = false
+  end
+  return mysqldb, elasticsearchdb
 end
 
 def get_courts
@@ -80,7 +91,7 @@ end
 
 def main
   keyword = URI.escape('年')
-  db = init_db()
+  mysqldb, elasticsearchdb = init_db()
   courts = get_courts()
   date1, date2 = get_date_section()
   courts.each do |court|
@@ -142,36 +153,57 @@ def main
         else
           division_name = '不明'
         end
-        sql = "INSERT INTO
+        if mysqldb
+          sql = "INSERT INTO
                   `judgements`
                SET
                   identify = '#{identify}',
-                  court_code = '#{db.escape(court_code)}',
-                  court_name = '#{db.escape(court_name)}',
+                  court_code = '#{mysqldb.escape(court_code)}',
+                  court_name = '#{mysqldb.escape(court_name)}',
                   year = '#{year}',
-                  word = '#{db.escape(queries['jcase'][0])}',
-                  number = '#{db.escape(queries['jno'][0])}',
-                  division = '#{db.escape(division_name)}',
-                  jcheck = '#{db.escape(queries['jcheck'][0])}',
-                  reason = '#{db.escape(reason)}',
-                  content = '#{db.escape(judgement_content)}',
-                  adjudged_at = '#{db.escape(date_string)}',
+                  word = '#{mysqldb.escape(queries['jcase'][0])}',
+                  number = '#{mysqldb.escape(queries['jno'][0])}',
+                  division = '#{mysqldb.escape(division_name)}',
+                  jcheck = '#{mysqldb.escape(queries['jcheck'][0])}',
+                  reason = '#{mysqldb.escape(reason)}',
+                  content = '#{mysqldb.escape(judgement_content)}',
+                  adjudged_at = '#{mysqldb.escape(date_string)}',
                   created_at = NOW(),
                   updated_at = NOW()
                ON DUPLICATE KEY UPDATE
                   identify = '#{identify}',
-                  court_code = '#{db.escape(court_code)}',
-                  court_name = '#{db.escape(court_name)}',
+                  court_code = '#{mysqldb.escape(court_code)}',
+                  court_name = '#{mysqldb.escape(court_name)}',
                   year = '#{year}',
-                  word = '#{db.escape(queries['jcase'][0])}',
-                  number = '#{db.escape(queries['jno'][0])}',
-                  division = '#{db.escape(division_name)}',
-                  jcheck = '#{db.escape(queries['jcheck'][0])}',
-                  reason = '#{db.escape(reason)}',
-                  content = '#{db.escape(judgement_content)}',
-                  adjudged_at = '#{db.escape(date_string)}',
+                  word = '#{mysqldb.escape(queries['jcase'][0])}',
+                  number = '#{mysqldb.escape(queries['jno'][0])}',
+                  division = '#{mysqldb.escape(division_name)}',
+                  jcheck = '#{mysqldb.escape(queries['jcheck'][0])}',
+                  reason = '#{mysqldb.escape(reason)}',
+                  content = '#{mysqldb.escape(judgement_content)}',
+                  adjudged_at = '#{mysqldb.escape(date_string)}',
                   updated_at = NOW()"
-        insert = db.query(sql)
+          insert = mysqldb.query(sql)
+        end
+        if elasticsearchdb
+          body = {
+            court: {
+              name: court_name,
+              code: court_code
+            },
+            division: division_name
+            year: year,
+            word: queries['jcase'][0],
+            number: queries['jno'][0],
+            jcheck: queries['jcheck'][0],
+            reason: reason
+            content: judgement_content,
+            adjudged_at: DateTime.parse(date_string),
+            created_at: DateTime.now,
+            updated_at: DateTime.now
+          }
+          elasticsearchdb.index  index: 'judgements', type: 'judgement', id: data['identify'], body: body
+        end
       end
     end
   end
