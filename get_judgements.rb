@@ -343,7 +343,7 @@ def main
             content: judgement_content,
             structure: split_content(judgement_content),
             characters: get_characters(judgement_content),
-            adjudged_at: DateTime.parse(date_string),
+            adjudged_at: Date.parse(date_string),
             created_at: DateTime.now,
             updated_at: DateTime.now
           }
