@@ -30,7 +30,7 @@ end
 
 def init_db
   db_config = read_db_config()
-  return Mysql2::Client.new(:host => db_config['host'], :username => db_config['username'], :password => db_config['password'], :database => db_config['database'])
+  return Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
 end
 
 def sleep_random_second
@@ -165,23 +165,39 @@ def get_schedules(db, court, division)
         data['section'] = tds[8].text.strip
         # 庭類
         data['process'] = tds[9].text.strip
+        data['identify'] = "#{court['value']}-#{data['roc_year']}-#{data['word']}-#{data['case']}-#{data['date'].gsub(" ", "-")}"
         puts data.to_json
         schedules << data
-        insert = db.query("INSERT INTO schedules (court_name, court_code, division_name, division_code, roc_year, word, number, date, court, section, process, created_at, updated_at)
-                       VALUES ('#{db.escape(court['name'])}',
-                               '#{db.escape(court['value'])}',
-                               '#{db.escape(division['name'])}',
-                               '#{db.escape(division['value'])}',
-                               '#{data['roc_year']}',
-                               '#{db.escape(data['word'])}',
-                               '#{data['case']}',
-                               '#{db.escape(data['date'])}',
-                               '#{db.escape(data['court'])}',
-                               '#{db.escape(data['section'])}',
-                               '#{db.escape(data['process'])}',
-                               NOW(),
-                               NOW()
-                               )")
+        insert = db.query("INSERT INTO `schedules`
+                            SET
+                              identify = '#{db.escape(data['identify'])}',
+                              court_name = '#{db.escape(court['name'])}',
+                              court_code = '#{db.escape(court['value'])}',
+                              division_name = '#{db.escape(division['name'])}',
+                              division_code = '#{db.escape(division['value'])}',
+                              roc_year = '#{data['roc_year']}',
+                              word = '#{db.escape(data['word'])}',
+                              number = '#{data['case']}',
+                              begin_at = '#{db.escape(data['date'])}',
+                              court = '#{db.escape(data['court'])}',
+                              section = '#{db.escape(data['section'])}',
+                              process = '#{db.escape(data['process'])}',
+                              created_at = NOW(),
+                              updated_at = NOW()
+                            ON DUPLICATE KEY UPDATE
+                              identify = '#{db.escape(data['identify'])}',
+                              court_name = '#{db.escape(court['name'])}',
+                              court_code = '#{db.escape(court['value'])}',
+                              division_name = '#{db.escape(division['name'])}',
+                              division_code = '#{db.escape(division['value'])}',
+                              roc_year = '#{data['roc_year']}',
+                              word = '#{db.escape(data['word'])}',
+                              number = '#{data['case']}',
+                              begin_at = '#{db.escape(data['date'])}',
+                              court = '#{db.escape(data['court'])}',
+                              section = '#{db.escape(data['section'])}',
+                              process = '#{db.escape(data['process'])}',
+                              created_at = NOW()")
       end
     end
     return schedules

@@ -20,7 +20,7 @@ end
 
 def init_db
   db_config = read_db_config()
-  return Mysql2::Client.new(:host => db_config['host'], :username => db_config['username'], :password => db_config['password'], :database => db_config['database'])
+  return Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
 end
 
 def get_courts
