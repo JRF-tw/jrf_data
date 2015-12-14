@@ -46,7 +46,7 @@ def write_json(filename, content)
 end
 
 def sleep_random_second
-  seconds = Random.rand(5..15)
+  seconds = Random.rand(10..40)
   puts "sleep #{seconds} seconds..."
   sleep(seconds)
 end
