@@ -112,8 +112,8 @@ def scan_clerks(content)
 end
 
 def scan_defendants(content)
-  if content.match(/\n\s*被\s+告\s+([\p{Word}\s\S]+?)\n\s*[上|訴訟|法定]/)
-    defendants = content.scan(/\n\s*被\s+告\s+([\p{Word}\s\S]+?)\n\s*[上|訴訟|法定]/).map { |i| i[0] }
+  if content.match(/\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\n\s*[\s男|\s女|上|訴訟|法定]/)
+    defendants = content.scan(/\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\n\s*[\s男|\s女|上|訴訟|法定]/).map { |i| i[0] }
     defendants = defendants.join("\n")
     defendants = defendants.split(/\n+/).map { |i| i.strip }
     return defendants
