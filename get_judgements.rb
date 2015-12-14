@@ -116,7 +116,7 @@ def scan_defendants(content)
     defendants = content.scan(/\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\n\s*[\s男|\s女|上|訴訟|法定|選任]/).map { |i| i[0] }
     defendants = defendants.join("\n")
     defendants = defendants.split(/\n+/).map { |i| i.strip }
-    return defendants
+    return defendants.uniq
   elsif content.match(/被\s+告\s+(\p{Word}+)/)
     content.scan(/被\s+告\s+(\p{Word}+)/).map { |i| i[0] }
   else
