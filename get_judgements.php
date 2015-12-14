@@ -27,8 +27,8 @@ function sleep_random_second() {
     sleep($second);
 }
 
-$dsn = "mysql:host={$db_config['host']};dbname={$db_config['database']}";
-$dbh = new PDO($dsn, $db_config['username'], $db_config['password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;"));
+$dsn = "mysql:host={$db_config['mysql']['host']};dbname={$db_config['mysql']['database']}";
+$dbh = new PDO($dsn, $db_config['mysql']['username'], $db_config['mysql']['password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;"));
 
 $sdate = new DateTime($argv[1]);
 $edate = new DateTime($argv[1]);
