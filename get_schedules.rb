@@ -176,7 +176,7 @@ def get_schedules(mysqldb, elasticsearchdb, court, division)
         data['section'] = tds[8].text.strip
         # 庭類
         data['process'] = tds[9].text.strip
-        date_string = data['date'].gsub(' ', '-')
+        date_string = data['date'].gsub('-', '').gsub(':', '').gsub(' ', '-')
         puts data['date']
         puts date_string
         data['identify'] = "#{court['code']}-#{data['roc_year']}-#{data['word']}-#{data['case']}-#{date_string}"
