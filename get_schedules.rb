@@ -165,7 +165,8 @@ def get_schedules(db, court, division)
         data['section'] = tds[8].text.strip
         # 庭類
         data['process'] = tds[9].text.strip
-        data['identify'] = "#{court['value']}-#{data['roc_year']}-#{data['word']}-#{data['case']}-#{data['date'].gsub(" ", "-")}"
+        date_string = data['date'].gsub(" ", "-")
+        data['identify'] = "#{court['value']}-#{data['roc_year']}-#{data['word']}-#{data['case']}-#{date_string}"
         puts data.to_json
         schedules << data
         insert = db.query("INSERT INTO `schedules`
