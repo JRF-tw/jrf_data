@@ -229,6 +229,24 @@ def split_content(content)
   structure.select { |k,v| v.length > 0 }
 end
 
+def get_division_name(sys)
+  if sys == 'V'
+    '民事'
+  elsif sys == 'C' or sys == 'M'
+    '刑事'
+  elsif sys == 'A'
+    '行政'
+  elsif sys == 'P'
+    '公懲'
+  elsif sys == 'I'
+    '少年'
+  elsif sys == 'S'
+    '訴願'
+  else
+    '不明'
+  end
+end
+
 def main
   keyword = URI.escape('年')
   mysqldb, elasticsearchdb = init_db()
@@ -276,23 +294,11 @@ def main
         datetime = DateTime.parse(date_string)
         date_string = datetime.strftime("%Y-%m-%d")
         html = Nokogiri::HTML(case_content)
-        judgement_content = html.css('pre')[0].text.gsub('　', '  ')
+        judgement_content = html.css('pre')[0].text.gsub('　', '  ').gsub("\r", '')
         tds = html.css('td')
         reason = tds[10].text
         identify = "#{court_code}-#{queries['jrecno'][0].gsub(',', '-')}"
-        if queries['v_sys'][0] == 'V'
-          division_name = '民事'
-        elsif queries['v_sys'][0] == 'C' or queries['v_sys'][0] == 'M'
-          division_name = '刑事'
-        elsif queries['v_sys'][0] == 'A'
-          division_name = '行政'
-        elsif queries['v_sys'][0] == 'P'
-          division_name = '公懲'
-        elsif queries['v_sys'][0] == 'I'
-          division_name = '少年'
-        else
-          division_name = '不明'
-        end
+        division_name = get_division_name(queries['v_sys'][0])
         if mysqldb
           sql = "INSERT INTO
                   `judgements`
