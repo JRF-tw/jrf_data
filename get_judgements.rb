@@ -282,7 +282,7 @@ def main
         identify = "#{court_code}-#{queries['jrecno'][0].gsub(',', '-')}"
         if queries['v_sys'][0] == 'V'
           division_name = '民事'
-        elsif queries['v_sys'][0] == 'C'
+        elsif queries['v_sys'][0] == 'C' or queries['v_sys'][0] == 'M'
           division_name = '刑事'
         elsif queries['v_sys'][0] == 'A'
           division_name = '行政'
