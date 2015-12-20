@@ -129,7 +129,7 @@ def scan_prosecutor_office(content)
     content.scan(/公\s+訴\s+人\s+(\p{Word}+)/).map { |i| i[0] }
   elsif content.match(/聲\s+請\s+人\s+(\p{Word}+)/)
     result = content.scan(/聲\s+請\s+人\s+(\p{Word}+)/).map { |i| i[0] }
-    if result == ["即債權人"]
+    if ["即債權人", "即", "即告訴人"].include?(result)
       return []
     else
       return result
