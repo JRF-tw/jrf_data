@@ -224,7 +224,7 @@ def get_schedules(mysqldb, elasticsearchdb, court, division)
               name: division['name'],
               code: division['code']
             },
-            roc_year: data['roc_year'],
+            year: data['roc_year'],
             word: data['word'],
             number: data['case'],
             begin_at: DateTime.parse(data['date']),
