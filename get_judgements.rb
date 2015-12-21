@@ -249,9 +249,9 @@ end
 
 def escape_content(mysqldb, content)
   if content == nil
-    nil
+    "NULL"
   elsif content.kind_of?(Array) or content.kind_of?(Hash)
-    mysqldb.escape(content.to_json)
+    mysqldb.escape(content.to_yaml)
   else
     mysqldb.escape(content)
   end
