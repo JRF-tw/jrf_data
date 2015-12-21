@@ -271,7 +271,7 @@ def main
       page = open(url, "Referer" => url)
       content = page.read
       content.force_encoding('UTF-8')
-      matches = scan_content(content, /本次查詢結果共([0-9]*)筆/)
+      matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
       if matches.length == 0
         puts "#{court['name']} #{division['name']} has no record"
         next
