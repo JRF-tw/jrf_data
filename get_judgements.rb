@@ -288,6 +288,11 @@ def main
         case_url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY03_1.aspx?id=#{j}&#{params}"
         case_page = open(case_url, "Referer" => url)
         case_content = case_page.read
+        if case_content.length < 350
+          puts 'something wrong'
+          sleep_random_second()
+          next
+        end
         case_content.force_encoding('UTF-8')
         case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
         if case_matches.length == 0
