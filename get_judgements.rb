@@ -70,7 +70,7 @@ def get_date_section
   end
   date1 = date1.strftime('%Y%m%d')
   date2 = date2.strftime('%Y%m%d')
-  return date1, date2
+  return date2, date2
 end
 
 def get_html(url)
