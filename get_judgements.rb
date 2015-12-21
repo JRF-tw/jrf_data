@@ -247,6 +247,16 @@ def get_division_name(sys)
   end
 end
 
+def escape_content(mysqldb, content)
+  if content == nil
+    nil
+  elsif content.kind_of?(Array) or content.kind_of?(Hash)
+    mysqldb.escape(content.to_json)
+  else
+    mysqldb.escape(content)
+  end
+end
+
 def main
   keyword = URI.escape('年')
   mysqldb, elasticsearchdb = init_db()
@@ -299,35 +309,65 @@ def main
         reason = tds[10].text
         identify = "#{court_code}-#{queries['jrecno'][0].gsub(',', '-')}"
         division_name = get_division_name(queries['v_sys'][0])
+        structure = split_content(judgement_content)
+        characters = get_characters(judgement_content)
         if mysqldb
           sql = "INSERT INTO
                   `judgements`
                SET
                   identify = '#{identify}',
-                  court_code = '#{mysqldb.escape(court_code)}',
-                  court_name = '#{mysqldb.escape(court_name)}',
+                  court_code = '#{escape_content(mysqldb, court_code)}',
+                  court_name = '#{escape_content(mysqldb, court_name)}',
+                  division_code = '#{queries['v_sys'][0]}',
+                  division_name = '#{escape_content(mysqldb, division_name)}',
                   year = '#{year}',
-                  word = '#{mysqldb.escape(queries['jcase'][0])}',
-                  number = '#{mysqldb.escape(queries['jno'][0])}',
-                  division = '#{mysqldb.escape(division_name)}',
-                  jcheck = '#{mysqldb.escape(queries['jcheck'][0])}',
-                  reason = '#{mysqldb.escape(reason)}',
-                  content = '#{mysqldb.escape(judgement_content)}',
-                  adjudged_at = '#{mysqldb.escape(date_string)}',
+                  word = '#{escape_content(mysqldb, queries['jcase'][0])}',
+                  number = '#{escape_content(mysqldb, queries['jno'][0])}',
+                  jcheck = '#{escape_content(mysqldb, queries['jcheck'][0])}',
+                  reason = '#{escape_content(mysqldb, reason)}',
+                  content = '#{escape_content(mysqldb, judgement_content)}',
+                  main = '#{escape_content(mysqldb, structure['main'])}',
+                  fact = '#{escape_content(mysqldb, structure['fact'])}',
+                  reason = '#{escape_content(mysqldb, structure['reason'])}',
+                  judges = '#{escape_content(mysqldb, characters['judges'])}',
+                  prosecutors = '#{escape_content(mysqldb, characters['prosecutors'])}',
+                  lawyers = '#{escape_content(mysqldb, characters['lawyers'])}',
+                  clerks = '#{escape_content(mysqldb, characters['clerks'])}',
+                  plaintiffs = '#{escape_content(mysqldb, characters['plaintiffs'])}',
+                  defendants = '#{escape_content(mysqldb, characters['defendants'])}',
+                  prosecutor_office = '#{escape_content(mysqldb, characters['prosecutor_office'])}',
+                  creditors = '#{escape_content(mysqldb, characters['creditors'])}',
+                  debtors = '#{escape_content(mysqldb, characters['debtors'])}',
+                  judicial_associate_officer = '#{escape_content(mysqldb, characters['judicial_associate_officer'])}',
+                  adjudged_at = '#{escape_content(mysqldb, date_string)}',
                   created_at = NOW(),
                   updated_at = NOW()
                ON DUPLICATE KEY UPDATE
                   identify = '#{identify}',
-                  court_code = '#{mysqldb.escape(court_code)}',
-                  court_name = '#{mysqldb.escape(court_name)}',
+                  court_code = '#{escape_content(mysqldb, court_code)}',
+                  court_name = '#{escape_content(mysqldb, court_name)}',
+                  division_code = '#{queries['v_sys'][0]}',
+                  division_name = '#{escape_content(mysqldb, division_name)}',
                   year = '#{year}',
-                  word = '#{mysqldb.escape(queries['jcase'][0])}',
-                  number = '#{mysqldb.escape(queries['jno'][0])}',
-                  division = '#{mysqldb.escape(division_name)}',
-                  jcheck = '#{mysqldb.escape(queries['jcheck'][0])}',
-                  reason = '#{mysqldb.escape(reason)}',
-                  content = '#{mysqldb.escape(judgement_content)}',
-                  adjudged_at = '#{mysqldb.escape(date_string)}',
+                  word = '#{escape_content(mysqldb, queries['jcase'][0])}',
+                  number = '#{escape_content(mysqldb, queries['jno'][0])}',
+                  jcheck = '#{escape_content(mysqldb, queries['jcheck'][0])}',
+                  reason = '#{escape_content(mysqldb, reason)}',
+                  content = '#{escape_content(mysqldb, judgement_content)}',
+                  main = '#{escape_content(mysqldb, structure['main'])}',
+                  fact = '#{escape_content(mysqldb, structure['fact'])}',
+                  reason = '#{escape_content(mysqldb, structure['reason'])}',
+                  judges = '#{escape_content(mysqldb, characters['judges'])}',
+                  prosecutors = '#{escape_content(mysqldb, characters['prosecutors'])}',
+                  lawyers = '#{escape_content(mysqldb, characters['lawyers'])}',
+                  clerks = '#{escape_content(mysqldb, characters['clerks'])}',
+                  plaintiffs = '#{escape_content(mysqldb, characters['plaintiffs'])}',
+                  defendants = '#{escape_content(mysqldb, characters['defendants'])}',
+                  prosecutor_office = '#{escape_content(mysqldb, characters['prosecutor_office'])}',
+                  creditors = '#{escape_content(mysqldb, characters['creditors'])}',
+                  debtors = '#{escape_content(mysqldb, characters['debtors'])}',
+                  judicial_associate_officer = '#{escape_content(mysqldb, characters['judicial_associate_officer'])}',
+                  adjudged_at = '#{escape_content(mysqldb, date_string)}',
                   updated_at = NOW()"
           insert = mysqldb.query(sql)
         end
@@ -347,8 +387,8 @@ def main
             jcheck: queries['jcheck'][0],
             reason: reason,
             content: judgement_content,
-            structure: split_content(judgement_content),
-            characters: get_characters(judgement_content),
+            structure: structure,
+            characters: characters,
             adjudged_at: Date.parse(date_string),
             created_at: DateTime.now,
             updated_at: DateTime.now
