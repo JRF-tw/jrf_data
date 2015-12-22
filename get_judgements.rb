@@ -198,7 +198,7 @@ def get_characters(content)
   characters['creditors'] = scan_creditors(content)
   characters['debtors'] = scan_debtors(content)
   characters['judicial_associate_officer'] = scan_judicial_associate_officer(content)
-  characters = characters.select { |k,v| v.length > 0 }
+  # characters = characters.select { |k,v| v.length > 0 }
   return characters
 end
 
@@ -256,7 +256,7 @@ end
 
 def escape_content(mysqldb, content)
   if content == nil
-    mysqldb.escape([].to_yaml)
+    nil
   elsif content.kind_of?(Array) or content.kind_of?(Hash)
     mysqldb.escape(content.to_yaml)
   else
@@ -384,6 +384,7 @@ def main
           insert = mysqldb.query(sql)
         end
         if elasticsearchdb
+          characters = characters.select { |k,v| v.length > 0 }
           body = {
             court: {
               name: court_name,
