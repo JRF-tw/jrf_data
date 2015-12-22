@@ -8,6 +8,7 @@ require 'json'
 require 'mechanize'
 require 'mysql2'
 require 'date'
+require 'time'
 require 'cgi'
 require 'elasticsearch'
 # require 'charlock_holmes'
@@ -46,7 +47,13 @@ def write_json(filename, content)
 end
 
 def sleep_random_second
-  seconds = Random.rand(5..30)
+  now = Time.now
+  if (1..5).include?(now.wday) and (8..18).include?(now.hour)
+    puts "it is at working hour"
+    seconds = Time.new(now.year, now.month, now.day, 19, 1, 0) - now
+  else
+    seconds = Random.rand(5..30)
+  end
   puts "sleep #{seconds} seconds..."
   sleep(seconds)
 end

@@ -22,7 +22,15 @@ $court_json_content = file_get_contents("./courts1.json");
 $courts_array = json_decode($court_json_content, true);
 
 function sleep_random_second() {
-    $second = rand(10, 40);
+    $now = new DateTime();
+    if ($now->format(w) > "0" && $now->format(w) < "6" && $now->format(H) > "07" && $now->format(H) < "19") {
+        error_log("it is at working hour.");
+        $until = new DateTime();
+        $until->setTime(19,0);
+        $second = $until->getTimestamp() - $now->getTimestamp();
+    } else {
+        $second = rand(10, 40);
+    }
     error_log("sleep for {$second} seconds...");
     sleep($second);
 }
