@@ -256,7 +256,7 @@ end
 
 def escape_content(mysqldb, content)
   if content == nil
-    "NULL"
+    mysqldb.escape([].to_yaml)
   elsif content.kind_of?(Array) or content.kind_of?(Hash)
     mysqldb.escape(content.to_yaml)
   else
