@@ -52,7 +52,7 @@ def sleep_random_second
     puts "it is at working hour"
     seconds = Time.new(now.year, now.month, now.day, 19, 1, 0) - now
   else
-    seconds = Random.rand(5..30)
+    seconds = Random.rand(5..20)
   end
   puts "sleep #{seconds} seconds..."
   sleep(seconds)
