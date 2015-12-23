@@ -81,6 +81,10 @@ def get_sys_name(sys)
     return '少年'
   elsif sys == 'A'
     return '行政'
+  elsif sys == 'U'
+    return '家事'
+  elsif sys == 'M'
+    return '社維'
   elsif sys == 'D'
     return '懲戒及職務'
   else
