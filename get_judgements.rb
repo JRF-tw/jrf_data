@@ -97,7 +97,7 @@ def get_actual_date(date_string)
 end
 
 def scan_judges(content)
-  content.scan(/法\s+官\s+([\p{Word}\w\s\S]+?)\\n/).map { |i| i[0].gsub(' ', '')  }
+  content.scan(/法\s+官\s+([\p{Word}\w\s\S]+?)\n/).map { |i| i[0].gsub(' ', '')  }
 end
 
 def scan_prosecutors(content)
@@ -109,8 +109,8 @@ def scan_lawyers(content)
 end
 
 def scan_clerks(content)
-  if content.match(/\\n\s+書記官\s+(\p{Word}+?)\\n/)
-    content.scan(/\\n\s+書記官\s+(\p{Word}+?)\\n/).map { |i| i[0].gsub(' ', '') }
+  if content.match(/\n\s+書記官\s+([\p{Word}\w\s\S]+?)\n/)
+    content.scan(/\n\s+書記官\s+([\p{Word}\w\s\S]+?)\n/).map { |i| i[0].gsub(' ', '') }
   elsif content.match(/\s+(\p{Word}+)書記官/)
     content.scan(/\s+(\p{Word}+)書記官/).map { |i| i[0] }
   else
@@ -119,10 +119,10 @@ def scan_clerks(content)
 end
 
 def scan_defendants(content)
-  if content.match(/\\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\\n\s*[\s男\s|\s女\s|上|訴訟|法定|選任|指定|輔\s+佐\s+人]/)
-    defendants = content.scan(/\\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\\n\s*[\s男\s|\s女\s|上|訴訟|法定|選任|指定|輔\s+佐\s+人]/).map { |i| i[0] }
-    defendants = defendants.join("\\n")
-    defendants = defendants.split(/\\n+/).map { |i| i.strip }
+  if content.match(/\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\n\s*[\s男\s|\s女\s|上|訴訟|法定|選任|指定|輔\s+佐\s+人]/)
+    defendants = content.scan(/\n\s*被\s+告\s+([\p{Word}\w\s\S]+?)\n\s*[\s男\s|\s女\s|上|訴訟|法定|選任|指定|輔\s+佐\s+人]/).map { |i| i[0] }
+    defendants = defendants.join("\n")
+    defendants = defendants.split(/\n+/).map { |i| i.strip }
     return defendants.uniq
   elsif content.match(/被\s+告\s+(\p{Word}+)/)
     content.scan(/被\s+告\s+(\p{Word}+)/).map { |i| i[0] }
@@ -147,7 +147,7 @@ def scan_prosecutor_office(content)
 end
 
 def scan_creditors(content)
-  content.scan(/\\n[即]?債\s*權\s*人\s+(\p{Word}+)/).map { |i| i[0] }
+  content.scan(/\n[即]?債\s*權\s*人\s+(\p{Word}+)/).map { |i| i[0] }
 end
 
 def scan_debtors(content)
@@ -161,8 +161,8 @@ def scan_debtors(content)
 end
 
 def scan_judicial_associate_officer(content)
-  if content.match(/(\p{Word}+)司法事務官\\n/)
-    content.scan(/(\p{Word}+)司法事務官\\n/).map { |i| i[0] }
+  if content.match(/(\p{Word}+)司法事務官\n/)
+    content.scan(/(\p{Word}+)司法事務官\n/).map { |i| i[0] }
   elsif content.match(/司法事務官\s+(\p{Word}+)\s*/)
     content.scan(/司法事務官\s+(\p{Word}+)\s*/).map { |i| i[0] }
   else
@@ -171,13 +171,13 @@ def scan_judicial_associate_officer(content)
 end
 
 def scan_plaintiffs(content)
-  if content.match(/原\s+告\s+([\p{Word}\\n\S]+)共同訴訟/)
-    plaintiffs = content.scan(/原\s+告\s+([\p{Word}\\n\s]+)共同訴訟/)[0][0]
-    plaintiffs = plaintiffs.split(/[\\n]+/).map { |i| i.strip }
+  if content.match(/原\s+告\s+([\p{Word}\n\S]+)共同訴訟/)
+    plaintiffs = content.scan(/原\s+告\s+([\p{Word}\n\s]+)共同訴訟/)[0][0]
+    plaintiffs = plaintiffs.split(/[\n]+/).map { |i| i.strip }
     return plaintiffs
-  elsif content.match(/原\s+告\s+([\p{Word}\\n\S]+)\\n被\s+告/)
-    plaintiffs = content.scan(/原\s+告\s+([\p{Word}\\n\S]+)\\n被\s+告/)[0][0]
-    plaintiffs = plaintiffs.split(/[\\n]+/).map { |i| i.strip }
+  elsif content.match(/原\s+告\s+([\p{Word}\n\S]+)\n被\s+告/)
+    plaintiffs = content.scan(/原\s+告\s+([\p{Word}\n\S]+)\n被\s+告/)[0][0]
+    plaintiffs = plaintiffs.split(/[\n]+/).map { |i| i.strip }
     return plaintiffs
   elsif content.match(/原\s+告\s+(\p{Word}+)/)
     return content.scan(/原\s+告\s+(\p{Word}+)/).map { |i| i[0] }
@@ -204,34 +204,34 @@ end
 
 def split_content(content)
   structure = {}
-  if content.match(/\s*主\s+文\s*\\n([\p{Word}\s\S]+)\s*事\s+實\s*\\n/)
-    structure['main'] = content.scan(/\s*主\s+文\s*\\n([\p{Word}\s\S]+)\s*事\s+實\s*\\n/)[0][0].strip
-  elsif content.match(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*事\s*實及理\s*由\s*\\n/)
-    structure['main'] = content.scan(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*事\s*實及理\s*由\s*\\n/)[0][0].strip
-  elsif content.match(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*犯罪事實\s*及\s*理由.*\\n/)
-    structure['main'] = content.scan(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*犯罪事實\s*及\s*理由.*\\n/)[0][0].strip
-  elsif content.match(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*犯罪事實.*\\n/)
-    structure['main'] = content.scan(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*犯罪事實.*\\n/)[0][0].strip
-  elsif content.match(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*理\s+由\s*\\n/)
-    structure['main'] = content.scan(/\\n\s*主\s+文\s*\\n([\p{Word}\s\S]+)\\n\s*理\s+由\s*\\n/)[0][0].strip
+  if content.match(/\s*主\s+文\s*\n([\p{Word}\s\S]+)\s*事\s+實\s*\n/)
+    structure['main'] = content.scan(/\s*主\s+文\s*\n([\p{Word}\s\S]+)\s*事\s+實\s*\n/)[0][0].strip
+  elsif content.match(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*事\s*實及理\s*由\s*\n/)
+    structure['main'] = content.scan(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*事\s*實及理\s*由\s*\n/)[0][0].strip
+  elsif content.match(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*犯罪事實\s*及\s*理由.*\n/)
+    structure['main'] = content.scan(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*犯罪事實\s*及\s*理由.*\n/)[0][0].strip
+  elsif content.match(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*犯罪事實.*\n/)
+    structure['main'] = content.scan(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*犯罪事實.*\n/)[0][0].strip
+  elsif content.match(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*理\s+由\s*\n/)
+    structure['main'] = content.scan(/\n\s*主\s+文\s*\n([\p{Word}\s\S]+)\n\s*理\s+由\s*\n/)[0][0].strip
   end
-  if content.match(/\\n\s+事\s+實.*\\n([\p{Word}\s\S]+)\\n\s*理\s+由.*\\n/)
-    structure['fact'] = content.scan(/\\n\s+事\s+實.*\\n([\p{Word}\s\S]+)\\n\s*理\s+由.*\\n/)[0][0].strip
-    if content.match(/\\n\s*理\s+由.*\\n([\p{Word}\s\S]+)\\n中\s+華\s+民\s+國\s+/)
-      structure['reason'] = content.scan(/\\n\s*理\s+由.*\\n([\p{Word}\s\S]+)\\n中\s+華\s+民\s+國\s+/)[0][0].strip
+  if content.match(/\n\s+事\s+實.*\n([\p{Word}\s\S]+)\n\s*理\s+由.*\n/)
+    structure['fact'] = content.scan(/\n\s+事\s+實.*\n([\p{Word}\s\S]+)\n\s*理\s+由.*\n/)[0][0].strip
+    if content.match(/\n\s*理\s+由.*\n([\p{Word}\s\S]+)\n中\s+華\s+民\s+國\s+/)
+      structure['reason'] = content.scan(/\n\s*理\s+由.*\n([\p{Word}\s\S]+)\n中\s+華\s+民\s+國\s+/)[0][0].strip
     end
-  elsif content.match(/\\n\s*事\s*實及理\s*由.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)
-    structure['fact'] = content.scan(/\\n\s*事\s*實及理\s*由.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)[0][0].strip
+  elsif content.match(/\n\s*事\s*實及理\s*由.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)
+    structure['fact'] = content.scan(/\n\s*事\s*實及理\s*由.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)[0][0].strip
     structure['reason'] = structure['fact']
-  elsif content.match(/\\n\s+事\s+實.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)
-    structure['fact'] = content.scan(/\\n\s+事\s+實.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)[0][0].strip
-  elsif content.match(/\\n\s*犯罪事實\s*及\s*理由.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)
-    structure['fact'] = content.scan(/\\n\s*犯罪事實\s*及\s*理由.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)[0][0].strip
+  elsif content.match(/\n\s+事\s+實.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)
+    structure['fact'] = content.scan(/\n\s+事\s+實.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)[0][0].strip
+  elsif content.match(/\n\s*犯罪事實\s*及\s*理由.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)
+    structure['fact'] = content.scan(/\n\s*犯罪事實\s*及\s*理由.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)[0][0].strip
     structure['reason'] = structure['fact']
-  elsif content.match(/\\n\s*犯罪事實.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)
-    structure['fact'] = content.scan(/\\n\s*犯罪事實.*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)[0][0].strip
-  elsif content.match(/\\n\s*理\s+由\s*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)
-    structure['reason'] = content.scan(/\\n\s*理\s+由\s*\\n([\p{Word}\s\S]+?)\\n中\s+華\s+民\s+國\s+/)[0][0].strip
+  elsif content.match(/\n\s*犯罪事實.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)
+    structure['fact'] = content.scan(/\n\s*犯罪事實.*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)[0][0].strip
+  elsif content.match(/\n\s*理\s+由\s*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)
+    structure['reason'] = content.scan(/\n\s*理\s+由\s*\n([\p{Word}\s\S]+?)\n中\s+華\s+民\s+國\s+/)[0][0].strip
   end
   structure.select { |k,v| v.length > 0 }
 end
