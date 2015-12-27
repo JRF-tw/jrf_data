@@ -7,7 +7,6 @@ DATE=date
 FORMAT="%Y-%m-%d"
 VAR=$1
 SIZE=${#VAR}
-echo $SIZE
 if [ $SIZE -eq 10 ]; then
   YEAR=`echo $VAR | cut -d '-' -f 1`
   start=`$DATE +$FORMAT -d "${VAR}"`
