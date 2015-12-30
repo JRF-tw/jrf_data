@@ -269,6 +269,7 @@ def get_page(url, refer, proxy)
   success = false
   until success
     begin
+      sleep_random_second()
       if proxy
         page = open(url, "Referer" => refer, :proxy => proxy)
       else
@@ -297,13 +298,19 @@ def main
     court['divisions'].each do |division|
       url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court=#{court['code']}+#{court_string}&v_sys=#{division['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate=#{date1}&edate=#{date2}&page=1&searchkw=#{keyword}&jmain=&cw=0"
       puts url
-      content = get_page(url, url, proxy)
-      matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
-      if matches.length == 0
-        puts "page seems something wrong"
-        write_file('./log/error1.html', content)
-        next
-      elsif matches[0][0].to_i == 0
+      success = false
+      until success
+        content = get_page(url, url, proxy)
+        matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
+        if matches.length == 0
+          puts "page seems something wrong"
+          write_file('./log/error1.html', content)
+          success = false
+        else
+          success = true
+        end
+      end
+      if matches[0][0].to_i == 0
         puts "#{court['name']} #{division['name']} has no record"
         next
       end
@@ -323,7 +330,6 @@ def main
           case_content = get_page(case_url, url, proxy)
           if case_content.length < 350
             puts 'something wrong, retry...'
-            sleep_random_second()
           else
             # case_content.force_encoding('UTF-8')
             case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
