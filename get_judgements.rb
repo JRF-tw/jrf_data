@@ -46,6 +46,12 @@ def write_json(filename, content)
   end
 end
 
+def write_file(filename, content)
+  File.open(filename,"w") do |f|
+    f.write(content)
+  end
+end
+
 def sleep_random_second
   now = Time.now
   if (1..5).include?(now.wday) and (8..18).include?(now.hour)
