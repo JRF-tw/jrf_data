@@ -329,6 +329,7 @@ def main
             case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
             if case_matches.length == 0
               puts 'cannot find link'
+              write_file('./log/error3.html', content)
             else
               success = true
             end
