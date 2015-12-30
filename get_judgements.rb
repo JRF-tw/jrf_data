@@ -15,13 +15,13 @@ require 'elasticsearch'
 
 Dir.chdir(File.dirname(__FILE__))
 
-def read_db_config
-  file = File.read('./db.json')
+def read_config
+  file = File.read('./config.json')
   return JSON.parse(file)
 end
 
 def init_db
-  db_config = read_db_config()
+  db_config = read_config()
   if db_config['mysql']['enable']
     mysqldb = Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
   else
@@ -264,20 +264,37 @@ def escape_content(mysqldb, content)
   end
 end
 
+def get_page(url, refer, proxy)
+  success = false
+  until success
+    begin
+      if proxy
+        page = open(url, "Referer" => refer, :proxy => proxy)
+      else
+        page = open(url, "Referer" => refer)
+      end
+      content = page.read
+      content.force_encoding('UTF-8')
+    end
+    success = true
+  end
+  return content
+end
+
 def main
   keyword = URI.escape('年')
   mysqldb, elasticsearchdb = init_db()
   courts = get_courts()
   date1, date2 = get_date_section()
+  config = read_config()
+  proxy = config["proxy"]["url"]
   courts.each do |court|
     sleep_random_second()
     court_string = URI.escape(court['name']).downcase
     court['divisions'].each do |division|
       url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY02_1.aspx?&v_court=#{court['code']}+#{court_string}&v_sys=#{division['code']}&jud_year=&jud_case=&jud_no=&jud_no_end=&jud_title=&keyword=&sdate=#{date1}&edate=#{date2}&page=1&searchkw=#{keyword}&jmain=&cw=0"
       puts url
-      page = open(url, "Referer" => url)
-      content = page.read
-      content.force_encoding('UTF-8')
+      content = get_page(url, url, proxy)
       matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
       if matches.length == 0
         puts "#{court['name']} #{division['name']} has no record"
@@ -292,19 +309,22 @@ def main
       params = matches[0][0]
       (1..count).each do |j|
         sleep_random_second()
-        case_url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY03_1.aspx?id=#{j}&#{params}"
-        case_page = open(case_url, "Referer" => url)
-        case_content = case_page.read
-        if case_content.length < 350
-          puts 'something wrong'
-          sleep_random_second()
-          next
-        end
-        case_content.force_encoding('UTF-8')
-        case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
-        if case_matches.length == 0
-          puts 'cannot find link'
-          next
+        success = false
+        until success
+          case_url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY03_1.aspx?id=#{j}&#{params}"
+          case_content = get_page(case_url, url, proxy)
+          if case_content.length < 350
+            puts 'something wrong, retry...'
+            sleep_random_second()
+          else
+            # case_content.force_encoding('UTF-8')
+            case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
+            if case_matches.length == 0
+              puts 'cannot find link'
+            else
+              success = true
+            end
+          end
         end
         print_url = case_matches[0][0];
         queries = CGI.parse(URI.parse(print_url).query)

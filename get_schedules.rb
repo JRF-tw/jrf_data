@@ -18,8 +18,8 @@ def write_json(filename, content)
   end
 end
 
-def read_db_config
-  file = File.read('./db.json')
+def read_config
+  file = File.read('./config.json')
   return JSON.parse(file)
 end
 
@@ -30,7 +30,7 @@ def get_html(url)
 end
 
 def init_db
-  db_config = read_db_config()
+  db_config = read_config()
   if db_config['mysql']['enable']
     mysqldb = Mysql2::Client.new(:host => db_config['mysql']['host'], :username => db_config['mysql']['username'], :password => db_config['mysql']['password'], :database => db_config['mysql']['database'])
   else
@@ -129,6 +129,16 @@ def get_page_total(k, v)
   end
 end
 
+def get_page(url, refer, proxy)
+  if proxy
+    page = open(url, "Referer" => refer, :proxy => proxy)
+  else
+    page = open(url, "Referer" => refer)
+  end
+  content = page.read
+  return content
+end
+
 def get_schedules(mysqldb, elasticsearchdb, court, division)
   ic = Iconv.new('UTF-8//IGNORE', 'Big5')
   schedules = []
@@ -136,6 +146,8 @@ def get_schedules(mysqldb, elasticsearchdb, court, division)
   sys = division["code"]
   page_total = get_page_total(crtid, sys)
   date1, date2 = get_date_section()
+  config = read_config()
+  proxy = config["proxy"]["url"]
   if page_total == 0
     return []
   else

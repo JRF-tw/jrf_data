@@ -15,7 +15,7 @@ libxml_use_internal_errors(true);
 $keyword = urlencode('年');
 $button = urlencode('查詢');
 $sel_judword = urlencode('常用字別');
-$config_json = file_get_contents("./db.json");
+$config_json = file_get_contents("./config.json");
 $db_config = json_decode($config_json, true);
 
 $court_json_content = file_get_contents("./courts1.json");
