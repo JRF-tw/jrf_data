@@ -276,6 +276,8 @@ def get_page(url, refer, proxy)
       end
       content = page.read
       content.force_encoding('UTF-8')
+    rescue
+      success = false
     end
     success = true
   end
