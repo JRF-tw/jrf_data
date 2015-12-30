@@ -14,6 +14,7 @@ if [ $SIZE -eq 10 ]; then
 else
   start=`$DATE +$FORMAT -d "${VAR}-01-01"`
   end=`$DATE +$FORMAT -d "${VAR}-12-31 + 1 day"`
+  YEAR=$VAR
 fi
 
 now=$start
