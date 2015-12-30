@@ -298,6 +298,10 @@ def main
       content = get_page(url, url, proxy)
       matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
       if matches.length == 0
+        puts "page seems something wrong"
+        write_file('./log/error1.html', content)
+        next
+      elsif matches[0][0].to_i == 0
         puts "#{court['name']} #{division['name']} has no record"
         next
       end
@@ -305,6 +309,7 @@ def main
       matches = scan_content(content, /FJUDQRY03_1\.aspx\?id=[0-9]*&([^"]*)/)
       if matches.length == 0
         puts "page seems something wrong"
+        write_file('./log/error2.html', content)
         next
       end
       params = matches[0][0]
