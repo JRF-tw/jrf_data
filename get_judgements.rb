@@ -80,11 +80,6 @@ def get_date_section
   return date2, date2
 end
 
-def get_html(url)
-  page = open(url)
-  html = Nokogiri::HTML(page.read)
-end
-
 def get_nccharset(agent)
   raw_html = agent.get(URI.parse("http://jirs.judicial.gov.tw/FJUD/FJUDQRY01_1.aspx"))
   html = Nokogiri::HTML(raw_html.body)
