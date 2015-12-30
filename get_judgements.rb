@@ -59,6 +59,7 @@ def sleep_random_second
     seconds = Time.new(now.year, now.month, now.day, 19, 1, 0) - now
   else
     seconds = Random.rand(5..20)
+    # seconds = 1
   end
   puts "sleep #{seconds} seconds..."
   sleep(seconds)
@@ -278,6 +279,7 @@ def get_page(url, refer, proxy)
       content = page.read
       content.force_encoding('UTF-8')
     rescue
+      puts 'open http error! retrying...'
       success = false
     end
     success = true
