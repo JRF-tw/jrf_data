@@ -303,7 +303,10 @@ def main
       success = false
       until success
         content = get_page(url, url, proxy)
-        matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
+        matches = scan_content(content, /本次查詢結果共\s*([0-9]*)\s*筆/)
+        if matches.length == 0
+          matches = scan_content(content, /共\s*([0-9]*)\s*筆\s*\/\s*每頁\s*20\s*筆\s*\//)
+        end
         if matches.length == 0
           puts "page seems something wrong"
           write_file('./log/error1.html', content)
@@ -315,6 +318,8 @@ def main
       if matches[0][0].to_i == 0
         puts "#{court['name']} #{division['name']} has no record"
         next
+      else
+        puts "#{court['name']} #{division['name']} found #{matches[0][0]} records"
       end
       count = matches[0][0].to_i
       matches = scan_content(content, /FJUDQRY03_1\.aspx\?id=[0-9]*&([^"]*)/)
