@@ -12,5 +12,6 @@
   },
   "proxy": {
     "url": null
-  }
+  },
+  "save_json": false
 }

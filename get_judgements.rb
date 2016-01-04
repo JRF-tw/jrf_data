@@ -450,6 +450,31 @@ def main
           }
           elasticsearchdb.index  index: 'judgements', type: 'judgement', id: identify, body: body
         end
+        if config['save_json']
+          content = {
+            identify: identify,
+            court: {
+              name: court_name,
+              code: court_code
+            },
+            division: {
+              name: division_name,
+              code: queries['v_sys'][0]
+            },
+            year: year,
+            word: queries['jcase'][0],
+            number: queries['jno'][0],
+            jcheck: queries['jcheck'][0],
+            reason: reason,
+            content: judgement_content,
+            structure: structure,
+            characters: characters,
+            adjudged_at: date_string,
+            created_at: DateTime.now.strftime('%Y-%m-%d %H:%M:%S'),
+            updated_at: DateTime.now.strftime('%Y-%m-%d %H:%M:%S')
+          }
+          write_json("./data/judgemets/#{identify}.json", content)
+        end
       end
     end
   end
