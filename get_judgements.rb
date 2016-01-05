@@ -339,7 +339,7 @@ def main
             if case_content.length < 350
               puts 'something wrong, retry...'
             else
-              # case_content.force_encoding('UTF-8')
+              case_content.force_encoding('UTF-8')
               case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
               if case_matches.length == 0
                 puts 'cannot find link'
