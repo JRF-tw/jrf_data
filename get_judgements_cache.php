@@ -46,7 +46,7 @@ while ($dateBegin <= $dateEnd) {
                     $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
                     $header = substr($response, 0, $header_size);
                     $content = substr($response, $header_size);
-                    if (empty($header) || false !== strpos($content, 'Object moved')) {
+                    if (empty($header) || false !== strpos($content, 'Object moved') || false !== strpos($header, 'Service Unavailable')) {
                         if (++$blockCount >= 5) {
                             error_log("blocked more than 5 times, die");
                             exit();
