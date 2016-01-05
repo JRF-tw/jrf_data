@@ -113,6 +113,8 @@ while ($dateBegin <= $dateEnd) {
                             $caseFetched = true;
                             file_put_contents($cachedFile, $content);
                         }
+                    } else {
+                        $caseFetched = true;
                     }
                 }
             }
@@ -121,5 +123,3 @@ while ($dateBegin <= $dateEnd) {
 
     $dateBegin = $dateNext;
 }
-
-
