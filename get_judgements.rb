@@ -333,19 +333,24 @@ def main
         sleep_random_second()
         success = false
         until success
-          case_url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY03_1.aspx?id=#{j}&#{params}"
-          case_content = get_page(case_url, url, proxy)
-          if case_content.length < 350
-            puts 'something wrong, retry...'
-          else
-            # case_content.force_encoding('UTF-8')
-            case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
-            if case_matches.length == 0
-              puts 'cannot find link'
-              write_file('./log/error3.html', content)
+          begin
+            case_url = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY03_1.aspx?id=#{j}&#{params}"
+            case_content = get_page(case_url, url, proxy)
+            if case_content.length < 350
+              puts 'something wrong, retry...'
             else
-              success = true
+              # case_content.force_encoding('UTF-8')
+              case_matches = scan_content(case_content, /href="([^"]*)">友善列印/)
+              if case_matches.length == 0
+                puts 'cannot find link'
+                write_file('./log/error3.html', content)
+              else
+                html = Nokogiri::HTML(case_content)
+                success = true
+              end
             end
+          rescue
+            success = false
           end
         end
         print_url = case_matches[0][0];
@@ -357,7 +362,6 @@ def main
         year = queries['jrecno'][0].split(',')[0].to_i
         datetime = DateTime.parse(date_string)
         date_string = datetime.strftime("%Y-%m-%d")
-        html = Nokogiri::HTML(case_content)
         judgement_content = html.css('pre')[0].text.gsub('　', '  ').gsub("\r", '')
         tds = html.css('td')
         reason = tds[10].text
