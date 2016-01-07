@@ -14,10 +14,14 @@ if (file_exists(__DIR__ . '/cache/' . $targetYear . '.done')) {
 }
 
 exec('/bin/ps aux | grep get_judgements_cache.php', $console);
+$lineCount = 0;
 foreach ($console AS $line) {
     if (substr($line, -29) === 'get_judgements_cache.php ' . $targetYear) {
-        error_log('previous process found, die');
-        exit();
+        ++$lineCount;
+        if ($lineCount >= 2) {
+            error_log('previous process found, die');
+            exit();
+        }
     }
 }
 
