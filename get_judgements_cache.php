@@ -8,7 +8,7 @@ if (!isset($argv[1]) || strlen($argv[1]) !== 4) {
 }
 $targetYear = intval($argv[1]);
 
-if (file_exists(__DIR__ . '/cache/' . $targetYear)) {
+if (file_exists(__DIR__ . '/cache/' . $targetYear . '.done')) {
     error_log('target year was completed, ' . $targetYear);
     exit();
 }
@@ -136,4 +136,4 @@ while ($dateBegin <= $dateEnd) {
 
     $dateBegin = $dateNext;
 }
-file_put_contents(__DIR__ . '/cache/' . $targetYear, '1');
+file_put_contents(__DIR__ . '/cache/' . $targetYear . '.done', '1');
