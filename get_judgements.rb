@@ -363,6 +363,7 @@ def main
         datetime = DateTime.parse(date_string)
         date_string = datetime.strftime("%Y-%m-%d")
         judgement_content = html.css('pre')[0].text.gsub('　', '  ').gsub("\r", '')
+        search_content = judgement_content.gsub("\n", '').gsub("\s", '')
         tds = html.css('td')
         reason = tds[10].text
         identify = "#{court_code}-#{queries['jrecno'][0].gsub(',', '-')}"
@@ -447,6 +448,7 @@ def main
             reason: reason,
             content: judgement_content,
             structure: structure,
+            search: search_content,
             characters: characters,
             adjudged_at: Date.parse(date_string),
             created_at: DateTime.now,
@@ -472,6 +474,7 @@ def main
             reason: reason,
             content: judgement_content,
             structure: structure,
+            search: search_content,
             characters: characters,
             adjudged_at: date_string,
             created_at: DateTime.now.strftime('%Y-%m-%d %H:%M:%S'),
