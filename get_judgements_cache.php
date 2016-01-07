@@ -2,10 +2,23 @@
 
 date_default_timezone_set('Asia/Taipei');
 
-if (isset($argv[1])) {
-    $targetYear = intval($argv[1]);
-} else {
-    $targetYear = date('Y');
+if (!isset($argv[1]) || strlen($argv[1]) !== 4) {
+    error_log('please provide target year, ex. php -q get_judgements_cache.php 2011');
+    exit();
+}
+$targetYear = intval($argv[1]);
+
+if (file_exists(__DIR__ . '/cache/' . $targetYear)) {
+    error_log('target year was completed, ' . $targetYear);
+    exit();
+}
+
+exec('/bin/ps aux | grep get_judgements_cache.php', $console);
+foreach ($console AS $line) {
+    if (substr($line, -29) === 'get_judgements_cache.php ' . $targetYear) {
+        error_log('previous process found, die');
+        exit();
+    }
 }
 
 $blockCount = 0;
@@ -123,3 +136,4 @@ while ($dateBegin <= $dateEnd) {
 
     $dateBegin = $dateNext;
 }
+file_put_contents(__DIR__ . '/cache/' . $targetYear, '1');
