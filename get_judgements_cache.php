@@ -138,6 +138,6 @@ while ($dateBegin <= $dateEnd) {
         }
     }
 
-    $dateBegin = $dateNext;
+    $dateBegin = $dateNext + 86400;
 }
 file_put_contents(__DIR__ . '/cache/' . $targetYear . '.done', '1');
