@@ -39,6 +39,7 @@ while ($dateBegin <= $dateEnd) {
         mkdir($cachePath, 0777, true);
     }
     $dateNext = $dateBegin + 86400;
+    $dateLabel = date('Ymd', $dateBegin) . '~' . date('Ymd', $dateNext);
 
     foreach ($courts as $court) {
         foreach ($court['divisions'] AS $division) {
@@ -47,7 +48,7 @@ while ($dateBegin <= $dateEnd) {
             $md5 = md5($urlDecoded);
             $cachedFile = $cachePath . '/list_' . $md5;
             if (!file_exists($cachedFile)) {
-                error_log("fetching list {$urlDecoded}");
+                error_log("[{$dateLabel}]fetching list {$urlDecoded}");
                 $listFetched = false;
                 while (false === $listFetched) {
                     $curl = curl_init($url);
@@ -102,7 +103,7 @@ while ($dateBegin <= $dateEnd) {
                     $cachedFile = $cachePath . '/case_' . $md5;
                     if (!file_exists($cachedFile)) {
                         $curl = curl_init($case_url);
-                        error_log("fetching case {$j}/{$count}");
+                        error_log("[{$dateLabel}]fetching case {$j}/{$count}");
                         curl_setopt($curl, CURLOPT_PROXY, $proxy);
                         curl_setopt($curl, CURLOPT_FORBID_REUSE, true);
                         curl_setopt($curl, CURLOPT_VERBOSE, true);
