@@ -66,8 +66,9 @@ while ($dateBegin <= $dateEnd) {
                     $content = substr($response, $header_size);
                     if (empty($header) || false !== strpos($content, 'Object moved') || false !== strpos($header, 'Service Unavailable')) {
                         if (++$blockCount >= 5) {
-                            error_log("blocked more than 5 times, die");
-                            exit();
+                            error_log("blocked more than 5 times, sleep for 1 min");
+                            sleep(60);
+                            $blockCount = 0;
                         } else {
                             error_log("block detected in list! sleep for 2 sec.");
                             sleep(2);
@@ -119,8 +120,9 @@ while ($dateBegin <= $dateEnd) {
                         $content = substr($response, $header_size);
                         if (empty($header) || false !== strpos($content, 'Object moved') || false !== strpos($header, 'Service Unavailable')) {
                             if (++$blockCount >= 5) {
-                                error_log("blocked more than 5 times, die");
-                                exit();
+                                error_log("blocked more than 5 times, sleep for 1 min");
+                                sleep(60);
+                                $blockCount = 0;
                             } else {
                                 error_log("block detected in case! sleep for 2 sec.");
                                 sleep(2);
