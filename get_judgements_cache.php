@@ -7,9 +7,10 @@ if (!isset($argv[1]) || strlen($argv[1]) !== 4) {
     exit();
 }
 $targetYear = intval($argv[1]);
+$errorLogFile = __DIR__ . '/cache/' . $targetYear . '.log';
 
 if (file_exists(__DIR__ . '/cache/' . $targetYear . '.done')) {
-    error_log('target year was completed, ' . $targetYear);
+    error_log("target year {$targetYear} was completed\n", 3, $errorLogFile);
     exit();
 }
 
@@ -19,7 +20,7 @@ foreach ($console AS $line) {
     if (substr($line, -29) === 'get_judgements_cache.php ' . $targetYear) {
         ++$lineCount;
         if ($lineCount >= 2) {
-            error_log('previous process found, die');
+            error_log(date('Y-m-d H:i:s') . "|previous process found, die\n", 3, $errorLogFile);
             exit();
         }
     }
@@ -48,7 +49,7 @@ while ($dateBegin <= $dateEnd) {
             $md5 = md5($urlDecoded);
             $cachedFile = $cachePath . '/list_' . $md5;
             if (!file_exists($cachedFile)) {
-                error_log("[{$dateLabel}]fetching list {$urlDecoded}");
+                error_log(date('Y-m-d H:i:s') . "|[{$dateLabel}]fetching list {$urlDecoded}\n", 3, $errorLogFile);
                 $listFetched = false;
                 while (false === $listFetched) {
                     $curl = curl_init($url);
@@ -66,16 +67,16 @@ while ($dateBegin <= $dateEnd) {
                     $content = substr($response, $header_size);
                     if (empty($header) || false !== strpos($content, 'Object moved') || false !== strpos($header, 'Service Unavailable')) {
                         if (++$blockCount >= 5) {
-                            error_log("blocked more than 5 times, sleep for 1 min");
+                            error_log(date('Y-m-d H:i:s') . "|blocked more than 5 times, sleep for 1 min\n", 3, $errorLogFile);
                             sleep(60);
                             $blockCount = 0;
                         } else {
-                            error_log("block detected in list! sleep for 2 sec.");
+                            error_log(date('Y-m-d H:i:s') . "|block detected in list! sleep for 2 sec.\n", 3, $errorLogFile);
                             sleep(2);
                         }
                     } else {
                         $blockCount = 0;
-                        error_log($header);
+                        error_log($header, 3, $errorLogFile);
                         file_put_contents($cachedFile, $content);
                         $listFetched = true;
                     }
@@ -104,7 +105,7 @@ while ($dateBegin <= $dateEnd) {
                     $cachedFile = $cachePath . '/case_' . $md5;
                     if (!file_exists($cachedFile)) {
                         $curl = curl_init($case_url);
-                        error_log("[{$dateLabel}]fetching case {$j}/{$count}");
+                        error_log(date('Y-m-d H:i:s') . "|[{$dateLabel}]fetching case {$j}/{$count}\n", 3, $errorLogFile);
                         curl_setopt($curl, CURLOPT_PROXY, $proxy);
                         curl_setopt($curl, CURLOPT_FORBID_REUSE, true);
                         curl_setopt($curl, CURLOPT_VERBOSE, true);
@@ -120,16 +121,16 @@ while ($dateBegin <= $dateEnd) {
                         $content = substr($response, $header_size);
                         if (empty($header) || false !== strpos($content, 'Object moved') || false !== strpos($header, 'Service Unavailable')) {
                             if (++$blockCount >= 5) {
-                                error_log("blocked more than 5 times, sleep for 1 min");
+                                error_log(date('Y-m-d H:i:s') . "|blocked more than 5 times, sleep for 1 min\n", 3, $errorLogFile);
                                 sleep(60);
                                 $blockCount = 0;
                             } else {
-                                error_log("block detected in case! sleep for 2 sec.");
+                                error_log(date('Y-m-d H:i:s') . "|block detected in case! sleep for 2 sec.\n", 3, $errorLogFile);
                                 sleep(2);
                             }
                         } else {
                             $blockCount = 0;
-                            error_log($header);
+                            error_log($header, 3, $errorLogFile);
                             $caseFetched = true;
                             file_put_contents($cachedFile, $content);
                         }
