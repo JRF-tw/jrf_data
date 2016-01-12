@@ -18,7 +18,7 @@ foreach (glob(__DIR__ . '/cache/*/*/*') AS $rawPath) {
         }
         $fileTime = mktime(0, 0, 0, $parts[$keys->m], $parts[$keys->d], $parts[$keys->y]);
         $nextTime = $fileTime + 86400;
-        $archiveFile = $yPath . '/' . date('Ymd', $fileTime) . '-' . date('d', $nextTime) . '.tar.gz';
+        $archiveFile = $yPath . '/' . date('Ymd', $fileTime) . '-' . date('md', $nextTime) . '.tar.gz';
         exec("/bin/tar -czf {$archiveFile} {$rawPath}");
     }
 }
