@@ -41,6 +41,10 @@ while ($dateBegin <= $dateEnd) {
     }
     $dateNext = $dateBegin + 86400;
     $dateLabel = date('Ymd', $dateBegin) . '~' . date('Ymd', $dateNext);
+    $mapFh = fopen($cachePath . '/files_map.csv', 'w');
+    fputcsv($mapFh, array(
+        'file name', 'decoded uri', 'court code', 'division code',
+    ));
 
     foreach ($courts as $court) {
         foreach ($court['divisions'] AS $division) {
@@ -48,6 +52,9 @@ while ($dateBegin <= $dateEnd) {
             $urlDecoded = urldecode($url . '?' . $param);
             $md5 = md5($urlDecoded);
             $cachedFile = $cachePath . '/list_' . $md5;
+            fputcsv($mapFh, array(
+                'list_' . $md5, $urlDecoded, $court['code'], $division['code'],
+            ));
             if (!file_exists($cachedFile)) {
                 error_log(date('Y-m-d H:i:s') . "|[{$dateLabel}]fetching list {$urlDecoded}\n", 3, $errorLogFile);
                 $listFetched = false;
@@ -103,6 +110,9 @@ while ($dateBegin <= $dateEnd) {
                     $urlDecoded = urldecode($case_url . "?id={$j}&{$param}");
                     $md5 = md5($urlDecoded);
                     $cachedFile = $cachePath . '/case_' . $md5;
+                    fputcsv($mapFh, array(
+                        'case_' . $md5, $urlDecoded, $court['code'], $division['code'],
+                    ));
                     if (!file_exists($cachedFile)) {
                         $curl = curl_init($case_url);
                         error_log(date('Y-m-d H:i:s') . "|[{$dateLabel}]fetching case {$j}/{$count}\n", 3, $errorLogFile);
@@ -143,5 +153,6 @@ while ($dateBegin <= $dateEnd) {
     }
 
     $dateBegin = $dateNext + 86400;
+    fclose($mapFh);
 }
 file_put_contents(__DIR__ . '/cache/' . $targetYear . '.done', '1');
