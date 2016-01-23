@@ -1,2 +1,5 @@
 iconv
 nokogiri
+mechanize
+mysql2
+elasticsearch
