@@ -66,7 +66,7 @@ result = []
     result << data
   end
 end
-write_json('data/victims.json', result)
+write_json('data/holocausts.json', result)
 
 
 
