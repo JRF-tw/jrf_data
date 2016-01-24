@@ -62,7 +62,7 @@ result = []
       case_data['註'] = c[17].text().strip.gsub('　', '')
       cases << case_data
     end
-    data['cases'] = cases
+    data['案件'] = cases
     result << data
   end
 end
